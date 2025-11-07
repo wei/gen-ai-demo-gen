@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hackathon Strategist</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light background */
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+        .bento-item {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .chat-message.user {
+            background-color: #e0f2fe; /* Light blue for user messages */
+            align-self: flex-end;
+        }
+        .chat-message.bot {
+            background-color: #e6e6e6; /* Light grey for bot messages */
+            align-self: flex-start;
+        }
+        .chat-message pre {
+            background-color: #f8f8f8;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-8 px-4">
+    <div class="max-w-4xl w-full bg-white rounded-xl shadow-lg p-8 space-y-8">
+        <!-- Header -->
+        <header class="text-center">
+            <h1 class="text-4xl font-bold text-gray-800">Hackathon Strategist</h1>
+            <p class="text-gray-600 mt-2">Meet Jewel, your personal hackathon project strategist!</p>
+        </header>
+
+        <!-- Input Section -->
+        <div class="bento-grid">
+            <div class="bento-item col-span-full md:col-span-1">
+                <label for="track-select" class="block text-sm font-medium text-gray-700 mb-2">Select Track:</label>
+                <select id="track-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                    {% for track in tracks %}
+                        <option value="{{ track }}">{{ track }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="bento-item col-span-full md:col-span-1">
+                <label for="prize-select" class="block text-sm font-medium text-gray-700 mb-2">Select Prize Categories:</label>
+                <select id="prize-select" multiple class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md h-32">
+                    {% for prize in prizes %}
+                        <option value="{{ prize.name }}">{{ prize.name }} - {{ prize.prize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <button id="generate-idea-btn" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out" disabled>
+            Generate Idea
+        </button>
+        <div id="loading-spinner" class="hidden text-center mt-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p class="text-gray-600 mt-2">Jewel is brainstorming...</p>
+        </div>
+
+        <!-- Chat Interface -->
+        <div id="chat-container" class="bento-item mt-8 hidden">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Chat with Jewel</h2>
+            <div id="chat-box" class="h-96 overflow-y-auto border border-gray-200 rounded-md p-4 mb-4 bg-gray-50 flex flex-col space-y-4">
+                <!-- Chat messages will be appended here -->
+            </div>
+            <div class="flex">
+                <input type="text" id="chat-input" class="flex-grow border border-gray-300 rounded-l-md p-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Ask Jewel a follow-up question...">
+                <button id="send-chat-btn" class="bg-blue-600 text-white py-3 px-6 rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out">
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const trackSelect = document.getElementById('track-select');
+        const prizeSelect = document.getElementById('prize-select');
+        const generateIdeaBtn = document.getElementById('generate-idea-btn');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const chatContainer = document.getElementById('chat-container');
+        const chatBox = document.getElementById('chat-box');
+        const chatInput = document.getElementById('chat-input');
+        const sendChatBtn = document.getElementById('send-chat-btn');
+
+        function updateGenerateButtonState() {
+            const selectedTrack = trackSelect.value;
+            const selectedPrizes = Array.from(prizeSelect.selectedOptions).map(option => option.value);
+            generateIdeaBtn.disabled = !(selectedTrack && selectedPrizes.length > 0);
+        }
+
+        trackSelect.addEventListener('change', updateGenerateButtonState);
+        prizeSelect.addEventListener('change', updateGenerateButtonState);
+
+        // Initial state check
+        updateGenerateButtonState();
+
+        generateIdeaBtn.addEventListener('click', async () => {
+            const selectedTrack = trackSelect.value;
+            const selectedPrizes = Array.from(prizeSelect.selectedOptions).map(option => option.value);
+
+            if (!selectedTrack || selectedPrizes.length === 0) {
+                alert('Please select a track and at least one prize category.');
+                return;
+            }
+
+            generateIdeaBtn.disabled = true;
+            loadingSpinner.classList.remove('hidden');
+            chatContainer.classList.add('hidden'); // Hide chat during idea generation
+
+            try {
+                const response = await fetch('/generate_idea', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ track: selectedTrack, prizes: selectedPrizes }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    appendMessage('bot', data.response);
+                    chatContainer.classList.remove('hidden');
+                } else {
+                    alert('Error generating idea: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert('An unexpected error occurred.');
+            } finally {
+                generateIdeaBtn.disabled = false;
+                loadingSpinner.classList.add('hidden');
+            }
+        });
+
+        sendChatBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        async function sendMessage() {
+            const userMessage = chatInput.value.trim();
+            if (userMessage === '') return;
+
+            appendMessage('user', userMessage);
+            chatInput.value = '';
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: userMessage }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    appendMessage('bot', data.response);
+                } else {
+                    alert('Error sending message: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert('An unexpected error occurred.');
+            }
+        }
+
+        function appendMessage(sender, message) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', sender, 'p-3', 'rounded-lg', 'max-w-[80%]', 'shadow-sm');
+            messageElement.innerHTML = message;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
+        }
+    </script>
+</body>
+</html>

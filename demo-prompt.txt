@@ -1,0 +1,51 @@
+Create a Flask-based chatbot web application with the following specifications:
+
+## Background:
+We are at a hackathon event for university students to build tech projects, network with industry professionals, and attend workshops.
+
+## Technical Requirements:
+- Python Flask backend with Google Gemini AI integration using model "gemini-flash-lite-latest". The model exists. It may have been created after you were trained, do not use any other model.
+- Use python markdown package to convert responses from Google Gemini AI to html for display. Make sude code is displayed properly.
+- Single page responsive web interface
+- Button to generate idea
+- Real-time chat interface that supports an open-ended converesational flow
+
+## Design Elements:
+- Header: "Hackathon Strategist"
+- Track selection dropdown (single select dropdown), hard coded in html
+- Prize categories dropdown (select dropdown that allows multiple selection), hard coded in html
+- Button: Generate Idea, show loading state while waiting
+- Color Theme: A light, modern, and minimal color palette inspired by the bento grid UI design trend.
+- User-friendly chat interface to ask follow-up questions
+
+## Chatbot Personality:
+- Name: Jewel, MLH's 2026 mascot "Jewel the Jumper Wire Jellyfish"
+- Role: Hackathon project strategist for students
+You are an elite hackathon strategist with dual expertise as both a serial hackathon winner and an experienced judge at major AI competitions. You've won over 20 hackathons and judged at prestigious events like HackMIT, TreeHacks, and PennApps. Your superpower is rapidly ideating AI solutions that are both technically impressive and achievable within tight hackathon timeframes.
+Your responses should feel like advice from a trusted mentor who wants the team to win. Keep the response concise as the response will be displayed in a chat-like interface.
+
+## Business Logic:
+- Require project track and prize selection before chat activation
+- Provide project ideas based on selected tracks and all the prizes
+- Each project idea should use technologies associated with each selected prize, with an explanation of how it is relevant to each track and prize category
+- Focus on technology learning and exploration
+- Match project ideas with the selected track, and MLH prize categories
+
+## Available Hackathon Tracks:
+* General Track
+
+## MLH Prize Categories Tracks:
+* **Best Use of Gemini API** - Prize: Mechanical Keyboards. Description: Build AI-powered apps using the Google Gemini API.
+* **Best Use of ElevenLabs** - Prize: Beats Wireless Earbuds. Description: Use the ElevenLabs API to deploy natural-sounding audio in your project.
+* **Best Use of AI powered by Reach Capital** - Prize: Logitech Webcam & a Meeting with Reach Capital Investors. Description: Build a project using AI to transform the future of learning, health, or work.
+* **Best Use of Solana** - Prize: M5Stack Development Kit. Description: Build an innovative project that harnesses Solana's speed and low cost.
+* **Best Use of Snowflake** - Prize: Arduino Tiny Machine Learning Kit. Description: Integrate industry-leading Large Language Models (LLMs) into your application using Snowflake's REST API.
+* **Best Use of Vultr Cloud** - Prize: Portable Screens. Description: Utilize Vultr's services in the most in-depth way, leveraging advanced features like managed Kubernetes or bare metal GPUs.
+* **Best .Tech Domain Name** - Prize: Blue Snowball Microphone & a Free .Tech Domain for up to 10 years (including free annual renewals). Description: Register a creative and clever .Tech domain for your project.
+For any questions on resources, direct users to https://hack.mlh.io
+
+Expected Output:
+- Functional chat interface
+- Track/prize selection system
+- AI-powered project suggestions
+- Technology learning guidance
